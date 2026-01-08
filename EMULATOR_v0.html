@@ -1,0 +1,86 @@
+<script>
+// v0 GOAL: minimal emulator
+
+//   - start the emulator
+//   - run CPU cycles
+//   - display a trace log 
+
+function _snippet()
+{
+function EMU()                  // emulator constructor
+{
+    this.frequency_hz =  2;                         // emulator system clock frequency
+    this.cycleTime_ms = 1000 / this.frequency_hz;   // time = 1 / frequency
+    this.i = 0;                                     // interval counter
+    this.run = function() 
+    {
+        setInterval(()=>        // arrow function passes 'this' during callback instead of window object
+        {
+            this.cpu.cycle();   // run the cpu for one clock cycle
+            console.log(`interval ${this.i++}: ${this.cycleTime_ms}ms to run 1 CPU cycle`);
+        }, this.cycleTime_ms );
+    }
+    this.cpu = { cycle() {} }  // nothing happens in this CPU cycle yet
+};
+
+var oEMU = new EMU();           // instantiate new emulator object from constructor
+oEMU.run();                     // run the emulator
+}
+
+
+
+
+
+
+var console = new function(){
+this.log = function(str){ document.getElementById("_console").innerHTML += "<"+"pre class=codebox>"+str+"<"+"/pre>" }
+this.clear = function(){document.getElementById("_console").innerHTML = "" }}
+function TXT(str)
+{ 
+    this._value = str;
+    this.unbrace = function(c1,c2){return this.split(c1).slice(1).join(c1).split(c2).slice(0,-1).join(c2)}
+}
+
+// non-standard, this is just an example
+TXT.prototype.__proto__ = String.prototype;
+
+TXT.prototype.toString = function() {
+  return this._value;
+};
+
+
+var oTXT = new TXT(_snippet.toString());
+//oTXT = oTXT.unbrace("{","}")
+
+
+var _str = _snippet.toString();
+_str = _str.split("{").slice(1).join("{").split("}").slice(0,-1).join("}");
+
+_str = highlightComments( _str.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>").replace(/\s/g,"&nbsp;"),"<br>" )
+_str += "<style>"
++".runbutton {padding:8px;border-radius: 2px;background: #1291FF url('data:image/gif;base64,"
++"R0lGODlhDAAMAPMAAF3/APv9/9Ls/7ni/3DD/2C9/zyu/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAA"
++"AALAAAAAAMAAwAAwQ7EMgiQhBFaiGIMcS1DZo2CAAlfWVAEWsAS0RlxAEJGNa9WzpeJzYD1FQ7n8QFEOhKnI3sE0KVKBaMJgIAOw==')"
++";background-position: 8px 10px;background-repeat:no-repeat;color:#FFFFFF;font-size:small;border-width:1px;}"
++".whitebox {width:100%;background-color:#FFFFFF;padding:5px;margin:0px}"
++".codebox {background-color:#F0F0F0;margin:5px 10px 5px 2px;padding:5px;font-size:medium}"
++".comment { color: green } pre { white-space: pre-wrap }"
++"</style>"
+_str = "<div class=whitebox><pre class=codebox><code>"+_str+"</code></pre>"
++"<button class=runbutton onclick=console.clear();_snippet()>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Run code snippet</button>"
++"<div id=_console></div>"
++"</div>"
+
+function highlightComments(code,sep)
+{
+    const code_arr = code.split(sep);
+    const commentPattern = /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm; // Match single-line and multi-line comments
+    for(var i=0;i<code_arr.length;i++)                     // Replace comments with highlighted spans
+        code_arr[i] = code_arr[i].replace(commentPattern, '<span class="comment">$1</span>');
+    return code_arr.join(sep);
+}
+
+document.write(_str)
+
+
+</script>
